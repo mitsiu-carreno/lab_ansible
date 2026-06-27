@@ -1,0 +1,15 @@
+---
+tljh_admin_user: "lab"
+
+pg_user: ""
+pg_password: ""
+pg_database: ""
+pg_host: ""
+
+tljh_db_url: "postgresql://{{ pg_user }}:{{ pg_password }}@{{ pg_host }}/{{ pg_database}}"
+
+nofile_soft: 65536
+nofile_hard: 65536
+
+ufw_extra_tcp_range_start: 8000
+ufw_extra_tcp_range_end: 9000

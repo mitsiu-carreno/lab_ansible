@@ -1,0 +1,21 @@
+---
+- name: tljh setup
+  hosts: tljh_server
+  become: true
+  gather_facts: true
+
+  roles:
+    - role: base
+      tags: base
+
+    - role: postgresql
+      tags: postgresql
+
+    - role: jupyterhub
+      tags: jupyterhub
+
+    - role: firewall
+      tags: firewall
+
+    - role: skel
+      tags: skel

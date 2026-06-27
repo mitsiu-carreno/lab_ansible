@@ -1,0 +1,69 @@
+---
+- name: Create NestJs starter project in /tmp
+  ansible.builtin.command:
+    cmd: >
+      npx --yes @nestjs/cli new starter
+      --skip-git
+      --package-manager npm
+    chdir: /tmp
+  args:
+    creates: /tmp/starter/package.json
+
+- name: Install @nestjs/config inside starter project
+  community.general.npm:
+    name: "@nestjs/config"
+    path: /tmp/starter
+    state: present
+
+- name: Copy starter template to /etc/skel (without node_modules)
+  ansible.builtin.copy:
+    src: /tmp/starter/
+    dest: /etc/skel/starter/
+    remote_src: true
+    owner: root
+    group: root
+    mode: preserve
+
+- name: Remove node_modules from skel copy
+  ansible.builtin.file:
+    path: /etc/skel/starter/node_modules
+    state: absent
+
+- name: Ensure shared NestJs directory exists
+  ansible.builtin.file:
+    path: /opt/nestjs-shared
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Copy package*.json to shared location
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: /opt/nestjs-shared/
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0644"
+  loop:
+    - /etc/skel/starter/package.json
+    - /etc/skel/starter/package-lock.json
+
+- name: Install shared node_modules
+  community.general.npm:
+    path: /opt/nestjs-shared
+    state: present
+
+- name: Make shared node_modules world-readable
+  ansible.builtin.file:
+    path: /opt/nestjs-shared/node_modules
+    state: directory
+    mode: "a+rX"
+    recurse: true
+
+- name: Symlink shared node_modules into skel project
+  ansible.builtin.file:
+    src: /opt/nestjs-shared/node_modules
+    dest: /etc/skel/starter/node_modules
+    state: link
+    force: true

@@ -1,0 +1,50 @@
+---
+- name: Ensure tljh config directory exists
+  ansible.builtin.file:
+    path: /opt/tljh/config/jupyterhub_config.d/
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy tljh custom config
+  ansible.builtin.template:
+    src: custom.py.j2
+    dest: /opt/tljh/config/jupyterhub_config.d/custom.py
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload tljh config
+
+- name: Ensure JupyterLab labconfig directory exists
+  ansible.builtin.file:
+    path: /etc/jupyter/labconfig
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy JupyterLab page_config.json
+  ansible.builtin.copy:
+    src: page_config.json
+    dest: /etc/jupyter/labconfig/page_config.json
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload tljh config
+
+- name: Install psycopg2-binary into tljh env
+  ansible.builtin.pip:
+    name: psycopg2-binary
+    executable: /opt/tljh/hub/bin/pip
+    state: present
+  notify: Reload tljh config
+
+- name: Install Node.js and npm
+  ansible.builtin.apt:
+    name:
+      - nodejs
+      - npm
+    state: present
+    update_cache: true
+

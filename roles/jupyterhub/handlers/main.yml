@@ -1,0 +1,5 @@
+- name: Reload tljh config
+  ansible.builtin.command:
+    cmd: /opt/tljh/hub/bin/tljh-config reload
+  changed_when: true
+

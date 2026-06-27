@@ -1,0 +1,50 @@
+---
+- name: Install base packages
+  ansible.builtin.apt:
+    name:
+      - python3
+      - python3-dev
+      - git
+      - curl
+    state: present
+    update_cache: true
+
+- name: Check if TLJH is already installed
+  ansible.builtin.stat:
+    path: /opt/tljh/hub/bin/python3
+  register: tljh_installed
+
+- name: Download TLJH bootstrap script
+  ansible.builtin.get_url:
+    url: https://tljh.jupyter.org/bootstrap.py
+    dest: /tmp/tljh_bootstrap.py
+    mode: "0644"
+  when: not tljh_installed.stat.exists
+
+- name: Run tljh bootstrap installer
+  ansible.builtin.command:
+    cmd: "python3 /tmp/tljh_bootstrap.py --admin {{ tljh_admin_user }}"
+  environment:
+    PATH: "{{ ansible_facts['env']['PATH'] }}"
+  when: not tljh_installed.stat.exists
+  register: tljh_install_result
+  changed_when: tljh_install_result.rc == 0
+
+- name: Comment out exempt_group line in jupyterhub-admins sudoers
+  ansible.builtin.replace:
+    path: /etc/sudoers.d/jupyterhub-admins
+    regexp: '^(Defaults\s+exempt_group\s*=\s*jupyterhub-admins.*)$'
+    replace: '#\1'
+    validate: /usr/sbin/visudo -cf %s
+
+- name: Set soft nofile limit in /etc/security/limits.conf
+  ansible.builtin.lineinfile:
+    path: /etc/security/limits.conf
+    line: "* soft nofile {{ nofile_soft}}"
+    state: present
+
+- name: Set hard nofile limit in /etc/security/limits.conf
+  ansible.builtin.lineinfile:
+    path: /etc/security/limits.conf
+    line: "* hard nofile {{ nofile_hard }}"
+    state: present

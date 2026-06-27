@@ -1,0 +1,51 @@
+---
+- name: Install PostgreSQL packages
+  ansible.builtin.apt:
+    name:
+      - postgresql
+      - postgresql-contrib
+      - python3-psycopg2
+    state: present
+    update_cache: true
+
+- name: Install ACL tools (needed for become_user non-root)
+  ansible.builtin.apt:
+    name: acl
+    state: present
+
+- name: Ensure PostgreSQL service in started and enabled
+  ansible.builtin.service:
+    name: postgresql
+    state: started
+    enabled: true
+
+- name: Create PostgreSQL user
+  community.postgresql.postgresql_user:
+    name: "{{ pg_user }}"
+    password: "{{ pg_password }}"
+    role_attr_flags: LOGIN,NOSUPERUSER,NOCREATEDB,NOCREATEROLE
+    state: present
+  become: true
+  become_user: postgres
+
+- name: Create PostgreSQL database
+  community.postgresql.postgresql_db:
+    name: "{{ pg_database }}"
+    owner: "{{ pg_user }}"
+    encoding: UTF8
+    lc_collate: en_US.UTF-8
+    lc_ctype: en_US.UTF-8
+    template: template0
+    state: present
+  become: true
+  become_user: postgres
+
+- name: Grant all privileges on database to user
+  community.postgresql.postgresql_privs:
+    database: "{{ pg_database }}"
+    roles: "{{ pg_user }}"
+    privs: ALL
+    type: database
+    state: present
+  become: true
+  become_user: postgres
