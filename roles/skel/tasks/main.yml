@@ -15,6 +15,23 @@
     path: /tmp/starter
     state: present
 
+- name: Deploy app.module.ts with ConfigModule into scaffolded project
+  ansible.builtin.template:
+    src: app.module.ts.j2
+    dest: /tmp/starter/src/app.module.ts
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Add default env
+  ansible.builtin.template:
+    src: env.j2
+    dest: /tmp/starter/env
+    owner: root
+    group: root
+    mode: "0644"
+
+
 - name: Copy starter template to /etc/skel (without node_modules)
   ansible.builtin.copy:
     src: /tmp/starter/
@@ -67,3 +84,11 @@
     dest: /etc/skel/starter/node_modules
     state: link
     force: true
+
+- name: Add gradeMe script
+  ansible.builtin.template:
+    src: gradeMe.sh.j2
+    dest: /etc/skel/gradeMe.sh
+    owner: root
+    group: root
+    mode: "0644"
