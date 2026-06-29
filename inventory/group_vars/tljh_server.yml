@@ -1,5 +1,5 @@
 ---
-tljh_admin_user: "lab"
+tljh_admin_user: ""
 
 pg_user: ""
 pg_password: ""

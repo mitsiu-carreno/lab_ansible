@@ -33,6 +33,23 @@
     mode: "0644"
   notify: Reload tljh config
 
+- name: Ensure JupyterLab system settings directory exists
+  ansible.builtin.file:
+    path: /usr/local/share/jupyter/lab/settings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy overrides.json (system-wide user settings)
+  ansible.builtin.copy:
+    src: overrides.json
+    dest: /usr/local/share/jupyter/lab/settings/overrides.json
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload tljh config
+
 - name: Install psycopg2-binary into tljh env
   ansible.builtin.pip:
     name: psycopg2-binary
