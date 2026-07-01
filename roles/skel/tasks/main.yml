@@ -92,3 +92,11 @@
     owner: root
     group: root
     mode: "0544"
+
+- name: Add instruct pdf script
+  ansible.builtin.copy:
+    src: instruct.pdf
+    dest: /etc/skel/instruct.pdf
+    owner: root
+    group: root
+    mode: "0644"
