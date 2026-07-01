@@ -9,7 +9,7 @@ sudo apt install ansible git
 git clone https://github.com/mitsiu-carreno/lab_ansible.git
 Fill inventory/group_vars/tljh_server.yml
 sudo su 
-ansible-playbook -i localhost, -c local site.yml
+ansible-playbook -i inventory/hosts.ini -c local site.yml
 ```
 
 # SSH key setup

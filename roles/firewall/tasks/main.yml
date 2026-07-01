@@ -15,11 +15,6 @@
     default: allow
     direction: outgoing
 
-- name: Allow SSH
-  community.general.ufw:
-    rule: allow
-    name: OpenSSH
-
 - name: Allow HTTP
   community.general.ufw:
     rule: allow

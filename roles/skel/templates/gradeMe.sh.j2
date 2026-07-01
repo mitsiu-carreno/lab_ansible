@@ -1,67 +1,150 @@
 #!/bin/bash
 
-source starter/env
+source ./env
 
-echo "Calificando en: ${PORT}"
+echo "Evaluando en puerto: ${PORT}"
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
 BASE="http://localhost:${PORT}"
 
-# Helper function to run a test
 run_test() {
   local name="$1"
-  local expected_status="$2"
-  local expected_body_contains="$3"
-  shift 3
-  local curl_args=("$@")
+  shift
 
-  # Run curl: body in stdout, status code appended after a delimiter
-  response=$(curl -s -w "|||%{http_code}" "${curl_args[@]}")
-  body="${response%|||*}"
-  status="${response##*|||}"
+  TEST_FAILED=0
+  TEST_ERRORS=()
 
-  # Check status code
-  if [ "$status" -eq "$expected_status" ]; then
-    status_ok=true
-  else
-    status_ok=false
-  fi
+  "$@"
 
-  # Check body contains expected string (if provided)
-  if [ -z "$expected_body_contains" ] || echo "$body" | grep -q "$expected_body_contains"; then
-    body_ok=true
-  else
-    body_ok=false
-  fi
-
-  # Report
-  if $status_ok && $body_ok; then
-    echo -e "${GREEN}✓ PASS${NC} [$name] status=$status"
+  if (( TEST_FAILED == 0 )); then
+    echo -e "${GREEN}✓ PASS${NC} [$name]\n\n"
   else
     echo -e "${RED}✗ FAIL${NC} [$name]"
-    $status_ok || echo "  Expected status $expected_status, got $status"
-    $body_ok   || echo "  Body did not contain: '$expected_body_contains'"
-    echo "  Body: $body"
+    printf '    %s\n' "${TEST_ERRORS[@]}"
+    echo -e "\n\n"
   fi
 }
 
+check_request() {
+  local expected_status="$1"
+  local expected_body="$2"
+  shift 2
 
-run_test "GET /" 200 "Hola mundo" \
-  curl -X GET "$BASE/"
+  local response body status
 
-# GET — expect 200 and a specific field in the JSON body
-run_test "GET /posts/1" 200 '"userId": 1' \
-  curl -X GET "$BASE/posts/1" -H "Accept: application/json"
+  echo $2 $3
+  response=$(curl -s -w "|||%{http_code}" "$@")
+  body="${response%|||*}"
+  status="${response##*|||}"
 
-# POST — send JSON body, expect 201 and the echoed title
-run_test "POST /posts" 201 '"title": "foo"' \
-  curl -X POST "$BASE/posts" \
-    -H "Content-Type: application/json" \
-    -d '{"title":"foo","body":"bar","userId":1}'
+  if [[ "$expected_body" =~ ^-?[0-9]+(\.[0-9]+)?$ ]]; then
+    expected_body=$(printf "%g" "$expected_body")
+  fi
 
-# 404 case
-run_test "GET /posts/99999" 404 "" \
-  curl -X GET "$BASE/posts/99999"
+  if [[ "$status" != "$expected_status" ]]; then
+    TEST_FAILED=1
+    TEST_ERRORS+=("REQ: $3")
+    TEST_ERRORS+=("└──Expected status $expected_status, got $status")
+  fi
+
+  if [[ -n "$expected_body" ]] && ! grep -Fq -- "$expected_body" <<<"$body"; then
+    TEST_FAILED=1
+    TEST_ERRORS+=("REQ: $3")
+    TEST_ERRORS+=("├──Body did not contain '$expected_body'")
+    TEST_ERRORS+=("└──Body: $body")
+  fi
+}
+
+test_create() {
+  check_request 201 "true" \
+    -X POST "$BASE/float/$(seq -100 .01 100 | shuf | head -n1)"
+
+  check_request 201 "true" \
+    -X POST "$BASE/float/$(seq -100 .01 100 | shuf | head -n1)"
+
+  check_request 201 "true" \
+    -X POST "$BASE/float/$(seq -100 .01 100 | shuf | head -n1)"
+
+  check_request 400 "numeric string is expected" \
+    -X POST "$BASE/float/e"
+
+  check_request 400 "numeric string is expected" \
+    -X POST "$BASE/float/@"
+}
+
+test_get() {
+  local rand1=$(seq -100 .01 100 | shuf | head -n1)
+  local rand2=$(seq -100 .01 100 | shuf | head -n1)
+  local rand3=$(seq -100 .01 100 | shuf | head -n1)
+
+  check_request 201 "true" \
+    -X POST "$BASE/float/${rand1}"
+
+  check_request 201 "true" \
+    -X POST "$BASE/float/${rand2}"
+
+  check_request 201 "true" \
+    -X POST "$BASE/float/${rand3}"
+
+  check_request 200 "${rand1}" \
+    -X GET "$BASE/float"
+
+  check_request 200 "${rand2}" \
+    -X GET "$BASE/float"
+
+  check_request 200 "${rand3}" \
+    -X GET "$BASE/float"
+}
+
+test_update() {
+  local rand1=$(seq -100 .01 100 | shuf | head -n1)
+  local rand2=$(seq -100 .01 100 | shuf | head -n1)
+  local newRand1=$(seq -100 .01 100 | shuf | head -n1)
+  local newRand2=$(seq -100 .01 100 | shuf | head -n1)
+
+  check_request 201 "true" \
+    -X POST "$BASE/float/${rand1}"
+
+  check_request 201 "true" \
+    -X POST "$BASE/float/${rand2}"
+
+  check_request 200 "true" \
+    -X PUT "$BASE/float?oldFloat=${rand1}&newFloat=${newRand1}"
+
+  check_request 200 "true" \
+    -X PUT "$BASE/float?oldFloat=${rand2}&newFloat=${newRand2}"
+
+  check_request 200 "false" \
+    -X PUT "$BASE/float?oldFloat=$(seq -100 .01 100 | shuf | head -n1)&newFloat=-99"
+
+  check_request 200 "${newRand1}" \
+    -X GET "$BASE/float"
+
+  check_request 200 "${newRand2}" \
+    -X GET "$BASE/float"
+}
+
+test_delete() {
+  local rand1=$(seq -100 .01 100 | shuf | head -n1)
+  local rand2=$(seq -100 .01 100 | shuf | head -n1)
+
+  check_request 201 "true" \
+    -X POST "$BASE/float/${rand1}"
+
+  check_request 201 "true" \
+    -X POST "$BASE/float/${rand2}"
+
+  check_request 200 "true" \
+    -X DELETE "$BASE/float/${rand1}"
+
+  check_request 200 "true" \
+    -X DELETE "$BASE/float/${rand2}"
+}
+
+run_test "POST /float/:newFloat" test_create
+run_test "GET /float" test_get
+run_test "PUT /float?oldFloat=x&newFloat=y" test_update
+run_test "DELETE /float/:exFloat" test_delete

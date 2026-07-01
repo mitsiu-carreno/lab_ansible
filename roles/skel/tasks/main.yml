@@ -88,7 +88,7 @@
 - name: Add gradeMe script
   ansible.builtin.template:
     src: gradeMe.sh.j2
-    dest: /etc/skel/gradeMe.sh
+    dest: /etc/skel/starter/gradeMe.sh
     owner: root
     group: root
     mode: "0544"
