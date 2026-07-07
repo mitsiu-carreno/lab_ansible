@@ -100,3 +100,19 @@
     owner: root
     group: root
     mode: "0644"
+
+- name: Add backer script
+  ansible.builtin.copy:
+    src: backer.sh
+    dest: /home/lab/scripts/backer.sh
+    owner: lab
+    group: lab
+    mode: "0544"
+
+- name: Add str_gen script
+  ansible.builtin.copy:
+    src: str_gen.sh
+    dest: /home/lab/scripts/str_gen.sh
+    owner: lab
+    group: lab
+    mode: "0544"
