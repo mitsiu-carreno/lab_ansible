@@ -85,21 +85,14 @@
     state: link
     force: true
 
-- name: Add gradeMe script
-  ansible.builtin.template:
-    src: gradeMe.sh.j2
-    dest: /etc/skel/starter/gradeMe.sh
-    owner: root
-    group: root
-    mode: "0544"
+- name: Ensure scripts directory exists
+  ansible.builtin.file:
+    path: "/home/lab/scripts"
+    state: directory
+    owner: lab
+    group: lab
+    mode: "0755"
 
-- name: Add instruct pdf script
-  ansible.builtin.copy:
-    src: instruct.pdf
-    dest: /etc/skel/instruct.pdf
-    owner: root
-    group: root
-    mode: "0644"
 
 - name: Add backer script
   ansible.builtin.copy:
@@ -113,6 +106,30 @@
   ansible.builtin.copy:
     src: str_gen.sh
     dest: /home/lab/scripts/str_gen.sh
+    owner: lab
+    group: lab
+    mode: "0544"
+
+- name: Add grader script
+  ansible.builtin.copy:
+    src: grader.sh
+    dest: /home/lab/scripts/grader.sh
+    owner: lab
+    group: lab
+    mode: "0544"
+
+- name: Ensure instrumentos directory exists
+  ansible.builtin.file:
+    path: "/home/lab/instrumentos"
+    state: directory
+    owner: lab
+    group: lab
+    mode: "0755"
+
+- name: Add gradeMe script
+  ansible.builtin.copy:
+    src: gradeMe.sh
+    dest: /home/lab/instrumentos/gradeMe.sh
     owner: lab
     group: lab
     mode: "0544"
