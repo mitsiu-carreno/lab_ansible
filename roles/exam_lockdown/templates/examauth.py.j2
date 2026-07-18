@@ -1,0 +1,22 @@
+import json
+from firstuserauthenticator.firstuseauthenticator import FirstUseAuthenticator
+
+LOCK_FILE = "{{ exam_lockdown_lock_file }}"
+
+def _read_locked():
+  try:
+    with open(LOCK_FILE) as f:
+      return set(json.load(f))
+  except (FileNotFoundError, json.JSONDecodeError):
+    return set()
+
+class SingleSessionAuthenticator(FristUseAuthenticator):
+  async def authenticate(self, handler, data):
+    result = await super().authenticate(handler, data)
+    if result is None:
+      return None
+    username = result if isinstance(result, str) else result["name"]
+    if username in _read_locked():
+      self.log.warning(f"Login blocked for locked account: {username}")
+      return None
+    return result

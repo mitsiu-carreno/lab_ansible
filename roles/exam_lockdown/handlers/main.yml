@@ -1,0 +1,19 @@
+---
+- name: Reload tljh config
+  ansible.builtin.command:
+    cmd: /opt/tljh/hub/bin/tljh-config reload
+  changed_when: true
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Restart traefik
+  ansible.builtin.systemd:
+    name: traefik
+    state: restarted
+
+- name: Restart examauth-monitor
+  ansible.builtin.systemd:
+    name: examauth-monitor
+    state: restarted

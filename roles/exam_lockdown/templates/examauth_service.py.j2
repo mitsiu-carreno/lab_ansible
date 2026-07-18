@@ -1,0 +1,9 @@
+with open('{{ exam_lockdown_token_file }}') as f:
+  _token = f.read().strip()
+
+c.JupyterHub.services = [
+  {
+    'name': 'examauth-monitor',
+    'api_token': _token,
+  }
+]

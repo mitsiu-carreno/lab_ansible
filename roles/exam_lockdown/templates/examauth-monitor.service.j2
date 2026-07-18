@@ -1,0 +1,13 @@
+[Unit]
+Description=TLJH exam concurrent-session monitor
+After=traefik.service jupyterhub.service
+Requires=traefik.service jupyterhub.service
+
+[Service]
+Type=simple
+ExecStart=/opt/tljh/hub/bin/python3 /opt/tljh/hub/bin/examauth_monitor.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

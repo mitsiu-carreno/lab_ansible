@@ -1,0 +1,104 @@
+---
+- name: Determine tljh python site-packages directory
+  ansible.builtin.command:
+    cmd: /opt/tljh/hub/bin/python3 -c "import site;  print(site.getsitepackages()[0])"
+  register: tljh_site_packages
+  changed_when: false
+
+- name: Deploy examauth single-session authenticator
+  ansible.builtin.template:
+    src: examauth.py.j2
+    dest: "{{ tljh_site_packages.stdout }}/examauth.py"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload tljh config
+
+- name: Set tljh auth type to SingleSessionAuthenticator
+  ansible.builtin.command:
+    cmd: /opt/tljh/hub/bin/tljh-config set auth.type examauth.SingleSessionAuthenticator
+  changed_when: true
+  notify: Reload tljh config
+  when: exam_lockdown_enabled
+
+- name: Ensure exam_lockdown lock file exists
+  ansible.builtin.copy:
+    dest: "{{ exam_lockdown_lock_file }}"
+    content: "[]"
+    owner: root
+    group: root
+    mode: "0600"
+    force: false  # never clobber an in-progress lock list on re-runs
+
+- name: Generate examauth monitor service token (only if missing)
+  ansible.builtin.shell:
+    cmd: "openssl rand -hex 32 > {{ exam_lockdown_token_file }}"
+    creates: "{{ exam_lockdown_token_file }}"
+
+- name: Restrict token file permissions
+  ansible.builtin.file:
+    path: "{{ exam_lockdown_token_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Deploy examauth Hub service registration
+  ansible.builtin.template:
+    src: examauth_service.py.j2
+    dest: /opt/tljh/config/jupyterhub_config.d/examauth_service.py
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload tljh config
+
+- name: Ensure traefik extra config directory exists
+  ansible.builtin.file:
+    path: /opt/tljh/config/traefik_config.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Display traefik access-log override
+  ansible.builtin.template:
+    src: accesslog-full.toml.j2
+    dest: /opt/tljh/config/traefik_config.d/accesslog-full.toml
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload tljh config
+    - Restart traefik
+
+- name: Install requests into tljh env for monitor script
+  ansible.builtin.pip:
+    name: requests
+    executable: /opt/tljh/hub/bin/pip
+    state: present
+
+- name: Deploy examauth concurrent-session monitor script
+  ansible.builtin.template:
+    src: examauth_monitor.py.j2
+    dest: /opt/tljh/hub/bin/examauth_monitor.py
+    owner: root
+    group: root
+    mode: "0750"
+  notify: Restart examauth-monitor
+
+- name: Deploy examauth-monitor systemd unit
+  ansible.builtin.template:
+    src: examauth-monitor.service.j2
+    dest: /etc/systemd/system/examauth-monitor.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload systemd
+    - Restart examauth-monitor
+
+- name: Enable examauth-monitor service
+  ansible.builtin.systemd:
+    name: examauth-monitor
+    enabled: true
+    state: started
+  when: exam_lockdown_enabled

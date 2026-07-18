@@ -1,0 +1,94 @@
+#!/opt/tljh/jub/bin/python3
+"""
+Watch traefik's access log for concurrent distinct-ip activity on the
+same JupyterHub user, and stops+locks that user's server when detected.
+"""
+
+import json
+import re
+import subprocess
+import time
+import requests
+import urllib3
+
+urllib3.disable_warnings()
+
+TOKEN_FILE = "{{ exam_lockdown_token_file }}"
+LOCK_FILE = "{{ exam_lockdown_lock_file }}"
+HUB_API = "http://127.0.0.1:{{ exam_lockdown_hub_api_port }}/hub/api"
+ACTIVITY_WINDOW = "{{ exam_lockdown_activity_window_seconds }}"
+CHECK_INTERVAL = "{{ exam_lockdown_check_interval_seconds }}"
+
+USER_PATH_RE = re.compile(r"^/user/([^/]+)/")
+
+with open(TOKEN_FILE) as f:
+  TOKEN = f.read().strip()
+
+HEADERS = {"Authorization": f"token {TOKEN}"}
+
+recent_ips = {}
+
+locked_users = set()
+
+def load_locked():
+  global locked_users
+  try:
+    with open(LOCK_FILE) as f:
+      locked_users = set(json.load(f))
+  except (FileNotFoundError, json.JSONDecodeError):
+    locked_users = set()
+
+def save_locked():
+  with open(LOCK_FILE, "w") as f:
+    json.dump(sorted(locked_users), f)
+
+def stop_server(username):
+  url = f"{HUB_API}/users/{username}/server"
+  try:
+    r = requests.delete(url, headers=HEADERS, verify=False, timeout=10)
+    print(f"[examauth-monitor] stop_server({username}) -> {r.status_code}")
+  except Exception as e:
+    print(f"[examauth-monitor] ERROR stopping {username}: {e}")
+
+def handle_line(line):
+  try:
+    rec = json.loads(line)
+  except json.JSONDecodeError:
+    return
+
+  path = rec.get("RequestPath", "")
+  m = USE_PATH_RE.match(path)
+  if not m:
+    return
+  username = m.group(1)
+  ip = req.get("ClientHost")
+  if not ip:
+    return
+
+  now = time.time()
+  ips = recent_ips.setDefault(username, {})
+  ips[ip] = now
+
+  stale = [k for k, ts in ips.items() if now - ts > ACTIVITY_WINDOW]
+  for k in stale:
+    del ips[k]
+
+  if len(ips) >= 2 and username not in locked_usesrs:
+    print(f"[examauth-monitor] CONCURRENT USE detect for '{username}': "
+          f"IPs={list(ips.keys())}")
+    stop_server(username)
+    locked_users.add(username)
+    save_locked()
+
+def main():
+  lock_locked()
+  print("[examauth-monitor] starting, tailing traefik journal...")
+  proc = subprocess.Popen(
+    ["journalctrl", "-u", "traefik", "-f", "-o", "cat", "-n", "0"],
+    stdout=subprocess.PIPE, text=True, bufsize=1
+  )
+  for line in proc.stdout:
+    handle_line(line.strip())
+
+if __name__ = "__main__":
+  main()
