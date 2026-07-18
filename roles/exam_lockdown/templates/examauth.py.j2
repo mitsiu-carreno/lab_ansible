@@ -1,5 +1,5 @@
 import json
-from firstuserauthenticator.firstuseauthenticator import FirstUseAuthenticator
+from firstuseauthenticator.firstuseauthenticator import FirstUseAuthenticator
 
 LOCK_FILE = "{{ exam_lockdown_lock_file }}"
 
@@ -10,7 +10,7 @@ def _read_locked():
   except (FileNotFoundError, json.JSONDecodeError):
     return set()
 
-class SingleSessionAuthenticator(FristUseAuthenticator):
+class SingleSessionAuthenticator(FirstUseAuthenticator):
   async def authenticate(self, handler, data):
     result = await super().authenticate(handler, data)
     if result is None:

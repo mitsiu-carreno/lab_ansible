@@ -57,7 +57,7 @@ def handle_line(line):
     return
 
   path = rec.get("RequestPath", "")
-  m = USE_PATH_RE.match(path)
+  m = USER_PATH_RE.match(path)
   if not m:
     return
   username = m.group(1)
@@ -81,14 +81,14 @@ def handle_line(line):
     save_locked()
 
 def main():
-  lock_locked()
+  load_locked()
   print("[examauth-monitor] starting, tailing traefik journal...")
   proc = subprocess.Popen(
-    ["journalctrl", "-u", "traefik", "-f", "-o", "cat", "-n", "0"],
+    ["journalctl", "-u", "traefik", "-f", "-o", "cat", "-n", "0"],
     stdout=subprocess.PIPE, text=True, bufsize=1
   )
   for line in proc.stdout:
     handle_line(line.strip())
 
-if __name__ = "__main__":
+if __name__ == "__main__":
   main()
