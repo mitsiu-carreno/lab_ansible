@@ -17,6 +17,9 @@
     - role: exam_lockdown
       tags: exam_lockdown
 
+    - role: exam_trash
+      tags: exam_trash
+
     - role: firewall
       tags: firewall
 

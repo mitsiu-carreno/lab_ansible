@@ -1,0 +1,51 @@
+import os
+import shutil
+import time
+from jupyter_server.services.contents.largefilemanager import LargeFileManager
+
+
+class TrashContentsManager(LargeFileManager):
+    """
+    Moves deleted files/directories into a per-user trash directory
+    instead of permanently deleting them. Preserves relative path
+    structure and timestamps entries to avoid collisions.
+    Managed by Ansible (exam_trash role) — do not edit by hand.
+    """
+    trash_dir_name = "{{ exam_trash_dir_name }}"
+
+    def _trash_root(self):
+        root = os.path.join(self.root_dir, self.trash_dir_name)
+        os.makedirs(root, exist_ok=True)
+        return root
+
+    def _is_within_trash(self, os_path):
+        trash_root = os.path.realpath(self._trash_root())
+        target = os.path.realpath(os_path)
+        return target == trash_root or target.startswith(trash_root + os.sep)
+
+    def delete_file(self, path):
+        os_path = self._get_os_path(path)
+
+        if not os.path.exists(os_path):
+            return super().delete_file(path)
+
+        if self._is_within_trash(os_path):
+            self.log.info(f"[trashmanager] permanent delete inside trash: {path}")
+            return super().delete_file(path)
+
+        trash_root = self._trash_root()
+        rel_dir = os.path.dirname(path)
+        dest_dir = os.path.join(trash_root, rel_dir) if rel_dir else trash_root
+        os.makedirs(dest_dir, exist_ok=True)
+
+        basename = os.path.basename(os_path)
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        dest_path = os.path.join(dest_dir, f"{timestamp}__{basename}")
+
+        counter = 1
+        while os.path.exists(dest_path):
+            dest_path = os.path.join(dest_dir, f"{timestamp}-{counter}__{basename}")
+            counter += 1
+
+        shutil.move(os_path, dest_path)
+        self.log.info(f"[trashmanager] moved '{path}' -> '{dest_path}'")
