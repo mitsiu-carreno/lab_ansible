@@ -1,0 +1,74 @@
+---
+- name: Ensure scripts directory exists
+  ansible.builtin.file:
+    path: "/home/lab/scripts"
+    state: directory
+    owner: lab
+    group: lab
+    mode: "0755"
+
+
+- name: Add backer script
+  ansible.builtin.copy:
+    src: backer.sh
+    dest: /home/lab/scripts/backer.sh
+    owner: lab
+    group: lab
+    mode: "0544"
+
+- name: Add str_gen script
+  ansible.builtin.copy:
+    src: str_gen.sh
+    dest: /home/lab/scripts/str_gen.sh
+    owner: lab
+    group: lab
+    mode: "0544"
+
+- name: Add grader script
+  ansible.builtin.copy:
+    src: grader.sh
+    dest: /home/lab/scripts/grader.sh
+    owner: lab
+    group: lab
+    mode: "0544"
+
+- name: Add deployer script
+  ansible.builtin.copy:
+    src: deployer.sh
+    dest: /home/lab/scripts/deployer.sh
+    owner: lab
+    group: lab
+    mode: "0544"
+
+- name: Add check_history script
+  ansible.builtin.copy:
+    src: check_history.sh
+    dest: /home/lab/scripts/check_history.sh
+    owner: lab
+    group: lab
+    mode: "0544"
+
+- name: Add check_txt script
+  ansible.builtin.copy:
+    src: check_txt.sh
+    dest: /home/lab/scripts/check_txt.sh
+    owner: lab
+    group: lab
+    mode: "0544"
+
+- name: Add check_trash script
+  ansible.builtin.copy:
+    src: check_trash.sh
+    dest: /home/lab/scripts/check_trash.sh
+    owner: lab
+    group: lab
+    mode: "0544"
+
+- name: Ensure instrumentos directory exists
+  ansible.builtin.file:
+    path: "/home/lab/instrumentos"
+    state: directory
+    owner: lab
+    group: lab
+    mode: "0755"
+

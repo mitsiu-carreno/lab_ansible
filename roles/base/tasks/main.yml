@@ -9,6 +9,10 @@
     state: present
     update_cache: true
 
+- name: Set timezone to America/Mexico_City
+  community.general.timezone:
+    name: America/Mexico_City
+
 - name: Check if TLJH is already installed
   ansible.builtin.stat:
     path: /opt/tljh/hub/bin/python3
