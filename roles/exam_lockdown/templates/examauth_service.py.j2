@@ -7,3 +7,11 @@ c.JupyterHub.services = [
     'api_token': _token,
   }
 ]
+
+c.JupyterHub.load_roles = [
+  {
+    'name': 'examauth-monitor-role',
+    'scopes': ['admin:servers', 'read:users'],
+    'services': ['examauth-monitor'],
+  }
+]

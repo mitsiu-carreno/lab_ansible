@@ -3,6 +3,6 @@ exam_lockdown_enabled: true
 exam_lockdown_activity_window_seconds: 15
 exam_lockdown_check_interval_seconds: 3
 exam_lockdown_accesslog_status_codes: "100-599"
-exam_lockdown_hub_api_port: 8081
+exam_lockdown_hub_api_port: 15001
 exam_lockdown_lock_file: /opt/tljh/state/examauth_locked_users.json
 exam_lockdown_token_file: /opt/tljh/state/examauth-monitor.token
