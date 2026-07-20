@@ -13,6 +13,26 @@
   community.general.timezone:
     name: America/Mexico_City
 
+- name: Set console-setup font face
+  ansible.builtin.lineinfile:
+    path: /etc/default/console-setup
+    regexp: '^FONTFACE='
+    line: 'FONTFACE="Terminus"'
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Update initframs
+
+- name: Set console-setup font size
+  ansible.builtin.lineinfile:
+    path: /etc/default/console-setup
+    regexp: '^FONTSIZE='
+    line: 'FONTSIZE="16x32"'
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Update initramfs
+
 - name: Check if TLJH is already installed
   ansible.builtin.stat:
     path: /opt/tljh/hub/bin/python3
