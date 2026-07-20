@@ -16,8 +16,8 @@ urllib3.disable_warnings()
 TOKEN_FILE = "{{ exam_lockdown_token_file }}"
 LOCK_FILE = "{{ exam_lockdown_lock_file }}"
 HUB_API = "http://127.0.0.1:{{ exam_lockdown_hub_api_port }}/hub/api"
-ACTIVITY_WINDOW = "{{ exam_lockdown_activity_window_seconds }}"
-CHECK_INTERVAL = "{{ exam_lockdown_check_interval_seconds }}"
+ACTIVITY_WINDOW = {{ exam_lockdown_activity_window_seconds }}
+CHECK_INTERVAL = {{ exam_lockdown_check_interval_seconds }}
 
 USER_PATH_RE = re.compile(r"^/user/([^/]+)/")
 
@@ -73,7 +73,7 @@ def handle_line(line):
   for k in stale:
     del ips[k]
 
-  if len(ips) >= 2 and username not in locked_usesrs:
+  if len(ips) >= 2 and username not in locked_users:
     print(f"[examauth-monitor] CONCURRENT USE detect for '{username}': "
           f"IPs={list(ips.keys())}")
     stop_server(username)
