@@ -59,16 +59,21 @@
     group: root
     mode: "0700"
 
-- name: Display traefik access-log override
+- name: Deploy traefik access-log override
   ansible.builtin.template:
     src: accesslog-full.toml.j2
     dest: /opt/tljh/config/traefik_config.d/accesslog-full.toml
     owner: root
     group: root
     mode: "0644"
-  notify:
-    - Reload tljh config
-    - Restart traefik
+  notify: Regenerate traefik config
+
+- name: Verify traefik access log status filter took efect
+  ansible.builtin.command:
+    cmd: grep -q "{{ exam_lockdown_accesslog_status_codes }}" /opt/tljh/state/traefik.toml
+  changed_when: false
+  register: _accesslog_check
+  failed_when: _accesslog_check.rc != 0
 
 - name: Install requests into tljh env for monitor script
   ansible.builtin.pip:

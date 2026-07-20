@@ -61,7 +61,7 @@ def handle_line(line):
   if not m:
     return
   username = m.group(1)
-  ip = req.get("ClientHost")
+  ip = rec.get("ClientHost")
   if not ip:
     return
 

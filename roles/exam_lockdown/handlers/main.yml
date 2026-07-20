@@ -8,6 +8,14 @@
   ansible.builtin.systemd:
     daemon_reload: true
 
+- name: Regenerate traefik config
+  ansible.builtin.command:
+    cmd: >-
+      /opt/tljh/hub/bin/python3 -c
+      "from tljh import traefik; traefik.ensure_traefik_config('/opt/tljh/state')"
+  changed_when: true
+  notify: Restart traefik
+
 - name: Restart traefik
   ansible.builtin.systemd:
     name: traefik
