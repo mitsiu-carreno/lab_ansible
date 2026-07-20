@@ -3,6 +3,7 @@
 
 for i in $(seq $2); do
   printf $1
-  openssl rand -base64 12 | tr -dc 'a-z0-9' | head -c 10
+  #openssl rand -base64 12 | tr -dc 'a-z0-9' | head -c 10
+  tr -dc 'a-z0-9' < /dev/urandom | head -c 10
   echo
 done
