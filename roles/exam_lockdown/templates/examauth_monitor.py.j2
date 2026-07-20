@@ -66,7 +66,7 @@ def handle_line(line):
     return
 
   now = time.time()
-  ips = recent_ips.setDefault(username, {})
+  ips = recent_ips.setdefault(username, {})
   ips[ip] = now
 
   stale = [k for k, ts in ips.items() if now - ts > ACTIVITY_WINDOW]
