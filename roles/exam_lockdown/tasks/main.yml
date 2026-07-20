@@ -68,6 +68,12 @@
     mode: "0644"
   notify: Regenerate traefik config
 
+- name: Regenerate traefik config
+  ansible.builtin.command:
+    cmd: /opt/tljh/hub/bin/tljh-config reload proxy
+  changed_when: true
+  notify: Reload tljh config
+
 - name: Verify traefik access log status filter took efect
   ansible.builtin.command:
     cmd: grep -q "{{ exam_lockdown_accesslog_status_codes }}" /opt/tljh/state/traefik.toml
