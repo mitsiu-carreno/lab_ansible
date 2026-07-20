@@ -50,6 +50,14 @@ def stop_server(username):
   except Exception as e:
     print(f"[examauth-monitor] ERROR stopping {username}: {e}")
 
+def force_logout(username):
+  url = f"{HUB_API}/users/{username}"
+  try:
+    r = requests.delete(url, headers=HEADERS, verify=False, timeout=10)
+    print(f"[examauth-monitor] force_logout({username}) -> {r.status_code}")
+  except Exception as e:
+    print(f"[examauth-monitor] ERROR forcing logout for {username}: {e}")
+
 def handle_line(line):
   try:
     rec = json.loads(line)
@@ -76,9 +84,11 @@ def handle_line(line):
   if len(ips) >= 2 and username not in locked_users:
     print(f"[examauth-monitor] CONCURRENT USE detect for '{username}': "
           f"IPs={list(ips.keys())}")
-    stop_server(username)
     locked_users.add(username)
     save_locked()
+    stop_server(username)
+    time.sleep(1)
+    force_logout(username)
 
 def main():
   load_locked()
