@@ -15,6 +15,26 @@
     path: /tmp/starter
     state: present
 
+- name: Install class-validator inside starter project
+  community.general.npm:
+    name: "class-validator"
+    path: /tmp/starter
+    state: present
+
+- name: Install class-transformer inside starter project
+  community.general.npm:
+    name: "class-transformer"
+    path: /tmp/starter
+    state: present
+
+- name: Deploy main.ts with ValidationPipe into scaffolded project
+  ansible.builtin.template:
+    src: main.ts.j2
+    dest: /tmp/starter/src/main.ts
+    owner: root
+    group: root
+    mode: "0644"
+
 - name: Deploy app.module.ts with ConfigModule into scaffolded project
   ansible.builtin.template:
     src: app.module.ts.j2
@@ -31,6 +51,13 @@
     group: root
     mode: "0644"
 
+- name: Ensure dto folder exists in skell
+  ansible.builtin.file:
+    path: /etc/skell/starter/src/dto
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
 
 - name: Copy starter template to /etc/skel (without node_modules)
   ansible.builtin.copy:
