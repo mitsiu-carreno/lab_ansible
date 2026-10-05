@@ -37,9 +37,9 @@ qemu-system-aarch64 \
 -cpu host \
 -m 4096 \
 -smp 4 \
--bios /nix/store/47nqyp9q0i8cggv8l3h6jrwpw7ww3bw8-qemu-10.2.2/share/qemu/edk2-aarch64-code.fd \
+-bios /nix/store/lzm84ri4kbyx8gqxwk5sd21mqc5all73-qemu-11.1.1/share/qemu/edk2-aarch64-code.fd \
 -drive if=virtio,file=disk.img,format=qcow2 \
--cdrom ubuntu-24.04.4-live-server-arm64.iso \
+-cdrom ubuntu-26.04.1-live-server-arm64.iso \
 -serial mon:stdio \
 -nographic \
 -netdev user,id=net0,hostfwd=tcp::2222-:22,hostfwd=tcp::8080-:80 \
