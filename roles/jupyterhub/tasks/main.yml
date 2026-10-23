@@ -50,9 +50,9 @@
     mode: "0644"
   notify: Reload tljh config
 
-- name: Install psycopg2-binary into tljh env
+- name: Install psycopg 3 into tljh env
   ansible.builtin.pip:
-    name: psycopg2-binary
+    name: psycopg[binary]
     executable: /opt/tljh/hub/bin/pip
     state: present
   notify: Reload tljh config
