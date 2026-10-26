@@ -33,11 +33,11 @@
     port: "443"
     proto: tcp
 
-- name: Allow TCP port range for tljh
-  community.general.ufw:
-    rule: allow
-    port: "{{ ufw_extra_tcp_range_start }}:{{ ufw_extra_tcp_range_end }}"
-    proto: tcp
+#- name: Allow TCP port range for tljh
+#  community.general.ufw:
+#    rule: allow
+#    port: "{{ ufw_extra_tcp_range_start }}:{{ ufw_extra_tcp_range_end }}"
+#    proto: tcp
 
 - name: Enable UFW
   community.general.ufw:

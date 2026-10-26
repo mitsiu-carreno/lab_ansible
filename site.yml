@@ -23,8 +23,8 @@
     - role: firewall
       tags: firewall
 
-    #- role: skel
-    #  tags: skel
+    - role: skel
+      tags: skel
 
     - role: helper_scripts
       tags: helper_scripts

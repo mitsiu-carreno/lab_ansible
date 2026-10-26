@@ -13,6 +13,19 @@
   community.general.timezone:
     name: America/Mexico_City
 
+- name: Install locales package
+  ansible.builtin.apt:
+    name: locales
+    state: present
+    update_cache: true
+  become: true
+
+- name: Enable en_US.UTF-8 locale
+  community.general.locale_gen:
+    name: en_US.UTF-8
+    state: present
+  become: true
+
 - name: Set console-setup font face
   ansible.builtin.lineinfile:
     path: /etc/default/console-setup

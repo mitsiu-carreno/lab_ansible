@@ -50,3 +50,52 @@ qemu-img snapshot -c clean ubuntu2404-ansible.qcow2
 Restore later:
 qemu-img snapshot -a clean ubuntu2404-ansible.qcow2
 ```
+
+# OS
+```
+sudo ufw allow 3001/tcp
+systemctl poweroff
+cat /sys/class/power_supply/BATT/capacity
+
+# Free port
+kill -9 $(lsof -i:PORT)
+
+# Access usb
+lsblk
+    sda - Disk
+    └ sda1 - Part
+
+sudo mount /dev/sda1 /media/usb
+sudo umount /media/usb
+
+# Gen users
+./str_gen.sh a 30
+
+# 1--- Turn in
+sudo su
+sudo chown -R root:root /home/jupyter-
+# 1 Undo
+sudo chown -R jupyter-lab:jupyter-lab /home/jupyter-lab
+
+# 2--- Deploy
+sudo ./deployer.sh <group> <544|644> /home/lab/instrumentos/a-inst.pdf
+                           Exex|Read
+
+# 3--- Logs traefik
+sudo journalctl -u traefik.service -f >> a-traefik.log
+
+# 4--- Locked out
+sudo cat /opt/tljh/state/examauth_locked_users.json
+
+# 5--- Monitor
+htop
+
+# 6--- Key-words
+egrep -ri "persona|gato|carro" /home/jupyter-* \
+        --exclude-dir=dist \
+        --exclude-dir=.jupyter 2>/dev/null \
+        | sort
+
+# Deploy manually
+sudo rsync -av /etc/skell/ /home/jupyter-lab
+``` 
