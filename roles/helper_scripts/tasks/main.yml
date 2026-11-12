@@ -64,6 +64,14 @@
     group: lab
     mode: "0544"
 
+- name: Add check_wcl script
+  ansible.builtin.copy:
+    src: check_wcl.sh
+    dest: /home/lab/scripts/check_wcl.sh
+    owner: lab
+    group: lab
+    mode: "0544"
+
 - name: Ensure instrumentos directory exists
   ansible.builtin.file:
     path: "/home/lab/instrumentos"
