@@ -3,7 +3,8 @@ find /home/jupyter-*/ \
     -name '.jupyter' -o \
     -name '.local' -o \
     -name '.npm' -o \
-    -name '.ipynb_checkpoints' \ # without -o
+    -name '.ipython' -o \
+    -name '.ipynb_checkpoints' \
   \) -prune \) -o \
   \( -type f \
     ! -name '.lesshst' \
@@ -11,9 +12,8 @@ find /home/jupyter-*/ \
     ! -name '.bashrc' \
     ! -name '.bash_history' \
     ! -name '.bash_logout' \
+    ! -name '*.pdf' \
     -print \) |
 while IFS= read -r file; do
-  echo "========== BEGIN: $file ========="
-  wc -l < "$file"
-  echo
+  echo  "$(wc -l < $file):\t $file"
 done
